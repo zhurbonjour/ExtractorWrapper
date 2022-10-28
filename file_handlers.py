@@ -1,14 +1,28 @@
 import re
 
 
-def check_values_in_line(line: str, reg_exp: str) -> str | None:
+def add_expression_to_collection(filename: str, expression: str):
     """
-    Проверка, есть ли в строке значение
-    если таковое находится, то оно возвращается,
-    если такового нет - возвращается None
+    Добавление выражения в соответствующий файл коллекции:
+    regular.txt или wrappers.txt
+    :param filename: имя коллекции (regular.txt/wrappers.txt)
+    :param expression: сохраняемое выражение
     """
-    domain_scheme = re.compile(r'%s' % reg_exp)
-    return re.search(pattern=domain_scheme, string=line)
+    with open(filename, 'a') as collection_file:
+        collection_file.write(expression + '\n')
+        collection_file.close()
+
+
+def get_expression_from_collection(filename: str) -> list:
+    """
+    Получение выражений из файла коллекций:
+    :param filename: имя коллекции (regular.txt/wrappers.txt)
+    :return: список выражений из коллекции
+    """
+    with open(filename, 'r') as collection_file:
+        collection = collection_file.read().splitlines()
+        collection_file.close()
+    return collection
 
 
 def check_values_in_file(filepath: str, reg_exp: str) -> list:
@@ -19,17 +33,16 @@ def check_values_in_file(filepath: str, reg_exp: str) -> list:
     :return: список найденных значений
     """
     values_list = []
-    with open(file=filepath, mode='r') as file:
+    scheme = re.compile(r'%s' % reg_exp)
+    with open(file=filepath, mode='r', encoding='utf-8') as file:
         for line in file:
-            value = check_values_in_line(line=line, reg_exp=reg_exp)
-            if value is None:
-                continue
-            values_list.append(value)
+            values = re.findall(scheme, line)
+            values_list += values
         file.close()
     return values_list
 
 
-def wrap_to_expression(values_list: list, first_expression: str, second_expression: str) -> None:
+def wrap_to_expression(values_list: list, expression: str) -> None:
     """
     Упаковка значений в конструкцию
     :param expression: выражение, принимаемое от пользователя
@@ -37,5 +50,12 @@ def wrap_to_expression(values_list: list, first_expression: str, second_expressi
     """
     with open("functions.txt", "w") as file:
         for value in values_list:
-            file.write(first_expression + value + second_expression)
+            file.write(expression.replace('VARIABLE', value))
     file.close()
+
+
+def get_wrapped_output_text() -> str:
+    with open('functions.txt', 'r') as file:
+        output_text = ''.join(file.readlines())
+        file.close()
+    return output_text

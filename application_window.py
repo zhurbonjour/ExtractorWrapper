@@ -1,7 +1,14 @@
+import re
 from tkinter import *
 from tkinter import ttk, filedialog
-from file_handlers import check_values_in_file, wrap_to_expression
-from button_handlers import get_regulars, get_wrappers
+from file_handlers import (
+    check_values_in_file,
+    wrap_to_expression,
+    get_expression_from_collection,
+    add_expression_to_collection,
+    get_wrapped_output_text
+)
+from tkinter import messagebox as mb
 
 
 root = Tk()
@@ -11,20 +18,13 @@ root.resizable(False, False)
 
 
 # переменные
-reg_exp_list = get_regulars()
-wrappers_list = get_wrappers()
+reg_exp_list = get_expression_from_collection(filename='regular.txt')
+wrappers_list = get_expression_from_collection(filename='wrappers.txt')
 
 
-def add_regexp():
-    with open('regular.txt', 'a') as regulars:
-        regulars.write(reg_expression.get() + '\n')
-        regulars.close()
-
-
-def add_wrapper():
-    with open('wrappers.txt', 'a') as wrappers:
-        wrappers.write(wrapper_expression.get() + '\n')
-        wrappers.close()
+def add_to_clipboard():
+    root.clipboard_clear()
+    root.clipboard_append(output_text.get(1.0, END))
 
 
 def insert_filepath_to_pathfield() -> None:
@@ -34,15 +34,23 @@ def insert_filepath_to_pathfield() -> None:
 
 
 def get_wrapped_result():
-    path = pathfield.get()
-    reg_exp = reg_expression.get()
-    first_wrap_exp = fpart_wrapper_expression.get()
-    second_wrap_exp = spart_wrapper_expression.get()
-    values_list = check_values_in_file(filepath=path, reg_exp=reg_exp)
-    wrap_to_expression(values_list=values_list,
-                       first_expression=first_wrap_exp,
-                       second_expression=second_wrap_exp
-                       )
+    try:
+        path = pathfield.get()
+        if not path:
+            mb.showerror('Path Error',
+                         'Не указан путь к файлу'
+                         )
+        reg_exp = reg_expression.get()
+        wrap_exp = wrapper_expression.get()
+        values_list = check_values_in_file(filepath=path, reg_exp=reg_exp)
+        if not values_list:
+            mb.showerror('RegExp Error',
+                         'По вашему регулярному выражению ничего не найдено'
+                         )
+        wrap_to_expression(values_list=values_list, expression=wrap_exp)
+        output_text.insert(1.0, get_wrapped_output_text())
+    except:
+        mb.showerror('RegExp Error', 'Ошибочное регулярное выражение')
 
 
 # верхний блок окна
@@ -74,30 +82,40 @@ reg_title.place(relx=0.01, rely=0.365)
 reg_expression = ttk.Combobox(frame_top, width=65, values=reg_exp_list)
 reg_expression.place(relx=0.01, rely=0.515)
 
-reg_templates = Button(frame_top, text='Add RegEx', command=add_regexp)
+reg_templates = Button(frame_top,
+                       text='Add RegEx',
+                       command=lambda: add_expression_to_collection(
+                           'regular.txt',
+                           reg_expression.get()
+                       ))
 reg_templates.place(relx=0.82, rely=0.41, width=95, height=40)
 
 # строка ввода конструкции враппера
 wrapper_title = Label(frame_top, text='Введите функцию обертки:')
 wrapper_title.place(relx=0.01, rely=0.68)
 
-fpart_wrapper_expression = ttk.Combobox(frame_top, width=65, values=fwrappers_list)
-fpart_wrapper_expression.place(relx=0.01, rely=0.83)
+wrapper_expression = ttk.Combobox(frame_top, width=65, values=wrappers_list)
+wrapper_expression.place(relx=0.01, rely=0.83)
 
-spart_wrapper_expression = ttk.Combobox(frame_top, width=65, values=swrappers_list)
-spart_wrapper_expression.place(relx=0.01, rely=0.83)
-
-wrapper_templates = Button(frame_top, text='Add Template', command=add_wrapper)
+wrapper_templates = Button(frame_top,
+                           text='Add Template',
+                           command=lambda: add_expression_to_collection(
+                               'wrappers.txt',
+                               wrapper_expression.get()
+                           ))
 wrapper_templates.place(relx=0.82, rely=0.73, width=95, height=40)
 
 # main functional buttons
 convert_button = Button(frame_bottom,
-                        text='Convert',
+                        text='Extract%Wrap',
                         anchor='center',
                         command=get_wrapped_result)
 convert_button.place(relx=0.82, rely=0.1, width=95)
 
-copy_button = Button(frame_bottom, text='Copy', anchor='center')
+copy_button = Button(frame_bottom,
+                     text='Copy',
+                     anchor='center',
+                     command=add_to_clipboard)
 copy_button.place(relx=0.82, rely=0.4, width=95)
 
 output_text = Text(frame_bottom, width=65, height=12)
