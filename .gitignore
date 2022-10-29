@@ -2,3 +2,5 @@
 /functions.txt
 /testfile.py
 /домены.rtf
+__pycache__/
+.idea/
