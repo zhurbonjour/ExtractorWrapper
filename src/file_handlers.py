@@ -48,14 +48,14 @@ def wrap_to_expression(values_list: list, expression: str) -> None:
     :param expression: выражение, принимаемое от пользователя
     :param values_list: принимаемый список значений
     """
-    with open("functions.txt", "w") as file:
+    with open("../functions.txt", "w") as file:
         for value in values_list:
             file.write(expression.replace('VARIABLE', value))
     file.close()
 
 
 def get_wrapped_output_text() -> str:
-    with open('functions.txt', 'r') as file:
+    with open('../functions.txt', 'r') as file:
         output_text = ''.join(file.readlines())
         file.close()
     return output_text

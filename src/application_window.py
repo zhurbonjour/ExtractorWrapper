@@ -17,8 +17,8 @@ def extractor_wrapper():
 
 
     # переменные
-    reg_exp_list = get_expression_from_collection(filename='regular.txt')
-    wrappers_list = get_expression_from_collection(filename='wrappers.txt')
+    reg_exp_list = get_expression_from_collection(filename='../regular.txt')
+    wrappers_list = get_expression_from_collection(filename='../wrappers.txt')
 
     def add_to_clipboard() -> None:
         """
@@ -93,7 +93,7 @@ def extractor_wrapper():
     reg_templates = tk.Button(frame_top,
                               text='Add RegEx',
                               command=lambda: add_expression_to_collection(
-                                  'regular.txt',
+                                  '../regular.txt',
                                   reg_expression.get()
                               ))
     reg_templates.place(relx=0.82, rely=0.41, width=95, height=40)
@@ -109,7 +109,7 @@ def extractor_wrapper():
     wrapper_templates = tk.Button(frame_top,
                                   text='Add Template',
                                   command=lambda: add_expression_to_collection(
-                                      'wrappers.txt',
+                                      '../wrappers.txt',
                                       wrapper_expression.get()
                                   ))
     wrapper_templates.place(relx=0.82, rely=0.73, width=95, height=40)
